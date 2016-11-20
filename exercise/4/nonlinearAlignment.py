@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # a
 def nonlinear_alignment_recursive(test, ref):
     # reached the last point
@@ -19,16 +20,35 @@ def nonlinear_alignment_recursive(test, ref):
 
 # b TODO
 def nonlinear_alignment_recursive_with_memoization(test, ref, memo):
-    # store current point
+    # reached last point
     if len(test) == 0 or len(ref) == 0:
-        return 0, dist_calculations
+        return 0
+    # only (t-1)/insertion is possible
+    if len(ref) == 1:
+        sum = 0
+        for elem in range(0, len(test)-1):
+            sum += (2 + abs(test[elem] - ref[0]))
+        return sum
     elif memo[len(ref)-1][len(test)-1] == -1:
-        memo[len(ref)-1][len(test)-1] = 1
-        return (abs(test[-1] - ref[-1]) + min(2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref, memo),       # (t-1)
-                                             0 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-1], memo),  # (t-1)(s-1)
-                                             2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-2], memo))), dist_calculations # (t-1)(s-2)
-    else:
-        return 0, dist_calculations
+        local_costs = abs(test[-1] - ref[-1])
+        memo[len(ref)-1][len(test)-1] = local_costs
+        if len(test) <= 2:
+            print 'asdf'
+            return 0
+        else:
+            print test
+
+            return local_costs + min(2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref, memo)) # (t-1)
+
+    elif memo[len(ref)-2][len(test)-1] == -1:
+        local_costs = abs(test[-1] - ref[-2])
+        memo[len(ref)-1][len(test)-1] = local_costs
+        return local_costs + min(nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-1], memo))  # (t-1)(s-1)
+
+    elif memo[len(ref)-3][len(test)-1] == -1:
+        local_costs = abs(test[-1] - ref[-3])
+        memo[len(ref)-1][len(test)-1] = local_costs
+        return local_costs + min(2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-2], memo)) # (t-1)(s-2)
 
 
 # c
@@ -83,36 +103,38 @@ def nonlinear_alignment_iterative(test, ref, cost_matrix, backpointer_matrix, di
 
             
 
-test_dat = np.fromfile('short/test.dat', sep='\n')
-ref_dat = np.fromfile('short/ref.dat', sep='\n')
+test_dat = np.fromfile('test.dat', sep='\n')
+ref_dat = np.fromfile('ref.dat', sep='\n')
 
 # --------------------- recursive alignment -------------------------------------
 print '--------------------- recursive alignment ------------------------------------\n' \
       'function call is uncommented because it does not terminate with the given data'
-result_a = nonlinear_alignment_recursive(test_dat, ref_dat)
-print result_a
+#dist_calculations = []
+#result_a = nonlinear_alignment_recursive(test_dat, ref_dat)
+#print result_a
 
 
 # --------------------- recursive alignment  with memo --------------------------
-print '--------------------- recursive alignment with memo---------------------------\n'
+#print '--------------------- recursive alignment with memo---------------------------\n'
 memo_matrix = np.empty((len(ref_dat), len(test_dat),))
 memo_matrix[:] = -1
 
 #print memo_matrix[len(ref_dat)-1][len(test_dat)-1]
 #print nonlinear_alignment_recursive_with_memoization(test_dat, ref_dat, memo_matrix)
 
-#print recursive_search(test_dat[:-1], ref_dat[:-1])
-#print test_dat[:-1]
-#print alignment_recursive(costs, test_dat, ref_dat)
-
 
 # --------------------- dynamic search ------------------------------------------
+
 print '--------------------- dynamic alignment ---------------------------------------\n'
 cost_matrix = np.empty((len(ref_dat),len(test_dat),))
 cost_matrix[:] = float("inf")
 result_c = nonlinear_alignment_iterative(test_dat, ref_dat, cost_matrix, 0, 0)
 print 'Took ' + str(result_c[1]) + ' distance calculations and the minimum distance is: ' + str(result_c[0][len(ref_dat)-1][len(test_dat)-1])
-print 'Search matrix:'
+# uncomment to print cost matrix
+
+print 'Cost matrix:'
 for row in range(0, len(result_c[0])):
-    print result_c[0][row]
-#print result_c[1]
+    full_row = ''
+    for column in  range(0, len(result_c[0][row])):
+        full_row += str(result_c[0][row][column]) +' '
+    print full_row
