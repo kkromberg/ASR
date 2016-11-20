@@ -1,6 +1,6 @@
 import numpy as np
 
-#a 
+# a
 def nonlinear_alignment_recursive(test, ref):
     # reached the last point
     if len(test) == 0 or len(ref) == 0:
@@ -16,52 +16,103 @@ def nonlinear_alignment_recursive(test, ref):
         return abs(test[-1] - ref[-1]) + min(2 + nonlinear_alignment_recursive(test[:-1], ref),       # (t-1)
                                              0 + nonlinear_alignment_recursive(test[:-1], ref[:-1]),  # (t-1)(s-1)
                                              2 + nonlinear_alignment_recursive(test[:-1], ref[:-2]))  # (t-1)(s-2)
+
 # b TODO
 def nonlinear_alignment_recursive_with_memoization(test, ref, memo):
     # store current point
     if len(test) == 0 or len(ref) == 0:
-        return 0
+        return 0, dist_calculations
     elif memo[len(ref)-1][len(test)-1] == -1:
         memo[len(ref)-1][len(test)-1] = 1
-        return abs(test[-1] - ref[-1]) + min(2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref, memo),       # (t-1)
+        return (abs(test[-1] - ref[-1]) + min(2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref, memo),       # (t-1)
                                              0 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-1], memo),  # (t-1)(s-1)
-                                             2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-2], memo))  # (t-1)(s-2)
+                                             2 + nonlinear_alignment_recursive_with_memoization(test[:-1], ref[:-2], memo))), dist_calculations # (t-1)(s-2)
     else:
-        return 0 
+        return 0, dist_calculations
 
-# c TODO
-def nonlinear_alignment_iterative(test, ref, cost_matrix):
-    s = len(ref)-1
-    t = len(test)-1
-    #print cost_matrix[s][t]
-    for elem_s in range(s, -1, -1):
-        for elem_t in range(t, -1, -1):
 
-            #local_costs = 
-            print elem_s, elem_t
-            print cost_matrix[elem_s][elem_t]
+# c
+def nonlinear_alignment_iterative(test, ref, cost_matrix, backpointer_matrix, dist_calculations):
+
+    start_range = 0
+    for t in range(0, len(test)):
+        # limit search space by setting the range of S
+        if start_range < len(ref)-1:
+            if start_range % 2 == 1:
+                start_range += 1
+        if start_range < len(ref):
+            start_range += 1
+
+        s = 0
+        for i in range(0, start_range):
+            # set all possible costs to infinity
+            ins_costs = float("inf")
+            sub_costs = float("inf")
+            skp_costs = float("inf")
+
+            if t == 0:
+                dist_calculations += 1
+                cost_matrix[0][0] = abs(test[0] - ref[0])
+            else:
+                # compute local costs
+                local_costs = abs(test[t] - ref[s])
+
+                dist_calculations +=1
+                # compute all possible previous costs
+                # (t-1)
+                if t-1 != -1:
+                    ins_costs = 2 + cost_matrix[s][t-1]
+                    dist_calculations +=1
+
+                    # (t-1)(s-1)
+                    if s-1 != -1:
+                        #sub_costs = abs(test[t-1] - ref[s-1])
+                        sub_costs = cost_matrix[s-1][t-1]
+                        dist_calculations +=1
+                        # (t-1)(s-2)
+                        if s-2 != -1:
+                            #skp_costs = 2 + abs(test[t-1] - ref[s-2])
+                            skp_costs = 2 + cost_matrix[s-2][t-1]
+                            dist_calculations +=1
+                costs = local_costs + int(min(ins_costs, sub_costs, skp_costs))
+
+                cost_matrix[s][t] = costs
+            s += 1
+
+    return cost_matrix, dist_calculations
+
             
 
-test_dat = np.fromfile('test.dat', sep='\n')
-ref_dat = np.fromfile('ref.dat', sep='\n')
+test_dat = np.fromfile('short/test.dat', sep='\n')
+ref_dat = np.fromfile('short/ref.dat', sep='\n')
+
+# --------------------- recursive alignment -------------------------------------
+print '--------------------- recursive alignment ------------------------------------\n' \
+      'function call is uncommented because it does not terminate with the given data'
+result_a = nonlinear_alignment_recursive(test_dat, ref_dat)
+print result_a
 
 
-
-print nonlinear_alignment_recursive(test_dat, ref_dat)
-
+# --------------------- recursive alignment  with memo --------------------------
+print '--------------------- recursive alignment with memo---------------------------\n'
 memo_matrix = np.empty((len(ref_dat), len(test_dat),))
 memo_matrix[:] = -1
-#print memo_matrix
 
 #print memo_matrix[len(ref_dat)-1][len(test_dat)-1]
 #print nonlinear_alignment_recursive_with_memoization(test_dat, ref_dat, memo_matrix)
 
 #print recursive_search(test_dat[:-1], ref_dat[:-1])
 #print test_dat[:-1]
-search_matrix = 0
-costs = [0] 
 #print alignment_recursive(costs, test_dat, ref_dat)
 
+
+# --------------------- dynamic search ------------------------------------------
+print '--------------------- dynamic alignment ---------------------------------------\n'
 cost_matrix = np.empty((len(ref_dat),len(test_dat),))
-cost_matrix[:] = np.NAN
-#nonlinear_alignment_iterative(test_dat, ref_dat, cost_matrix)
+cost_matrix[:] = float("inf")
+result_c = nonlinear_alignment_iterative(test_dat, ref_dat, cost_matrix, 0, 0)
+print 'Took ' + str(result_c[1]) + ' distance calculations and the minimum distance is: ' + str(result_c[0][len(ref_dat)-1][len(test_dat)-1])
+print 'Search matrix:'
+for row in range(0, len(result_c[0])):
+    print result_c[0][row]
+#print result_c[1]
