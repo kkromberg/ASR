@@ -29,6 +29,38 @@ class SpeechDetection:
     def calculateMeanOfSpeech(self,sumCosts,segmentBegin,segmentEnd):
         return sumCosts[segmentEnd] - sumCosts[segmentBegin - 1]/ (segmentEnd - segmentBegin + 1)
 
+    # solution for b
+    def dynamicProgramming(self):
+        self.numberOfCalculations = 0
+        K = 3
+        T = len(self.data)
+        H = [0] * (K + 1)
+        B = [0] * (K + 1)
+        localCostMatrix = self.calculateLocalCostMatrix()
+        for k in range(0, K + 1):
+            H[k] = [sys.maxint] * T
+            B[k] = [0] * T
+
+        H[0][0] = 0
+        for k in range(1, K + 1):
+            for t in range(1, T):
+                for t_prime in range(0, t):
+                    # Local costs
+                    energyAtPoint = 0
+                    for i in range(t_prime + 1, t + 1):
+                        energyAtPoint += self.multiply(self.data[i] - localCostMatrix[t_prime + 1][t],
+                                                       self.data[i] - localCostMatrix[t_prime + 1][t])
+
+                    if H[k][t] >= H[k - 1][t_prime] + energyAtPoint:
+                        B[k][t] = t_prime
+                        H[k][t] = H[k - 1][t_prime] + energyAtPoint
+
+        B1 = B[2][B[3][T - 1]]
+        B2 = B[3][T - 1]
+        print "numberOfCalculations", self.numberOfCalculations
+        print "boundaries"
+        #print B[3][T - 1], B[2][B[3][T - 1]]
+        print B1, B2
 
     # solution for c
     def startStopDetectionUsingSums(self):
@@ -141,3 +173,6 @@ if __name__ == "__main__":
     print '----------------------'
     print 'Detection of speech using sums:'
     s.startStopDetectionUsingSums()
+    print '----------------------'
+    print 'Detection of speech using normal approach:'
+    s.dynamicProgramming()
