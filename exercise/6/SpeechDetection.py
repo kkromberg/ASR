@@ -1,6 +1,6 @@
 import sys
 import math
-class StartStopDetection:
+class SpeechDetection:
     def __init__(self,fileLocation="data/probe1.ascii"):
         self.data = []
         for line in open(fileLocation,'r'):
@@ -37,48 +37,6 @@ class StartStopDetection:
                 matrix[i][j] = value
 
         return matrix
-
-        
-    def recursiveSearch(self, localCostMatrix, k, t):
-        if k >= t:
-            return 9999999999
-        #print "debug",k,t
-        if k == 0:
-            return 0
-
-        boundaryValues = []
-        for t_prime in range(1, t):
-            energyAtPoint = 0
-            for i in range(t_prime+1,t+1):
-                energyAtPoint += pow(self.data[i] - localCostMatrix[t_prime+1][t], 2)
-            #energyAtPoint = energyAtPoint / (t+1-t_prime)
-            boundaryValues.append( self.recursiveSearch(localCostMatrix, k-1, t_prime) + energyAtPoint )
-        
-        minValue = 123456789
-        #print boundaryValues, len(boundaryValues),k,t
-        for t_prime in range(1, t):
-            #print t_prime
-            if minValue > boundaryValues[t_prime-1]:
-                minValue = boundaryValues[t_prime-1]
-                self.backTrack[k-1][t] = t_prime-1
-
-        #print minValue + energyAtPoint
-        return minValue + energyAtPoint
-        
-    def retardedNonDynamicSearch(self,costMatrix):  
-        minCosts = 123421134
-        boundary1 = 0
-        boundary2 = 0
-        for i in range(0, len(costMatrix)):
-            for j in range(i+1, len(costMatrix[i])):
-                tempCosts = costMatrix[0][i] + costMatrix[i][j] + costMatrix[j][len(costMatrix)-1]
-                if tempCosts < minCosts:
-                    print i,j
-                    boundary1 = i
-                    boundary2 = j
-                    minCosts = tempCosts
-
-        print "boundaries", boundary1, boundary2
 
     def dynamicProgramming(self):
         self.numberOfCalculations = 0
@@ -155,7 +113,7 @@ if __name__ == "__main__":
     fileLocation = "data/probe1.ascii"
     if (len(sys.argv) == 2):
         fileLocation = sys.argv[1]
-    s = StartStopDetection(fileLocation)
+    s = SpeechDetection(fileLocation)
     s.dynamicProgramming()
     s.dynamicProgrammingWithRunningSums()
 
