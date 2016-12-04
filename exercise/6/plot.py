@@ -11,23 +11,10 @@ x = np.array(xrange(0, len(y)))
 
 plt.plot(x, y, label="Energies")
 boundaries_plt = plt.vlines(boundaries_exercise5, np.min(y), np.max(y), colors='r', label="Speech boundaries exercise 5")
-boundaries_plt = plt.vlines(boundaries_exercise6, np.min(y), np.max(y), colors='g', label="Speech boundaries exercise 6")
+boundaries_plt = plt.vlines(boundaries_exercise6, np.min(y), np.max(y), colors='g', linestyles='dashed', label="Speech boundaries exercise 6")
 plt.xlabel('Time')
 plt.ylabel('Energy')
 plt.legend()
-
 plt.grid(True)
-plt.savefig("test.png")
+plt.savefig('speechBoundaries.png')
 plt.show()
-
-'''
-energies = plt.plot(x, y, label="Energies")
-boundaries_plt = plt.vlines(boundaries, np.min(y), np.max(y), colors='r', label="Speech boundaries")
-plt.xlabel('time frame')
-plt.ylabel('log(energy)')
-plt.legend()
-
-plt.grid(True)
-plt.savefig("test.png")
-plt.show()
-'''
