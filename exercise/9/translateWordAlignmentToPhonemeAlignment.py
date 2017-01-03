@@ -8,19 +8,28 @@ import matplotlib.pyplot as plt
 def plot(num_oberservations):
     separated_tuples = zip(*num_oberservations)
     print separated_tuples
-    plt.scatter(*separated_tuples)
+    counter = 0
+    x_range = []
+    for elem in separated_tuples[0]:
+        x_range.append(counter)
+        counter += 1
+    print x_range
+
+    #plt.scatter(*separated_tuples)
     plt.title('Number of observation for each mixture')
     plt.xlabel('Mixture index')
     plt.ylabel('Amount of observations')
-    plt.xticks(separated_tuples[0])
+    plt.xticks(x_range, separated_tuples[0])
+    plt.plot(x_range, separated_tuples[1])
+    plt.plot(x_range, separated_tuples[1], 'or')
     plt.show()
 
 # task b
 def num_obersvations_word(src_file):
     word_alignment = open(src_file, 'r')
     all_prefixes = [1, 13, 22, 28, 37, 46, 55, 67, 82, 88, 97]
-    num_observations = {-1: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0,
-                        7: 0, 8: 0, 9: 0, 10: 0}
+    num_observations = {'silence': 0, 'zero': 0, 'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0, 'six': 0,
+                        'seven': 0, 'eight': 0, 'nine': 0, 'oh': 0}
 
     for line in word_alignment:
         line_int = np.fromstring(line, dtype=int, sep=' ')
@@ -29,35 +38,35 @@ def num_obersvations_word(src_file):
             if elem in all_prefixes and current_prefix != elem:
                 current_prefix = elem
                 if elem == 1:
-                    num_observations[0] += 1
+                    num_observations['zero'] += 1
                 elif elem == 13:
-                    num_observations[1] += 1
+                    num_observations['one'] += 1
                 elif elem == 22:
-                    num_observations[2] += 1
+                    num_observations['two'] += 1
                 elif elem == 28:
-                    num_observations[3] += 1
+                    num_observations['three'] += 1
                 elif elem == 37:
-                    num_observations[4] += 1
+                    num_observations['four'] += 1
                 elif elem == 46:
-                    num_observations[5] += 1
+                    num_observations['five'] += 1
                 elif elem == 55:
-                    num_observations[6] += 1
+                    num_observations['six'] += 1
                 elif elem == 67:
-                    num_observations[7] += 1
+                    num_observations['seven'] += 1
                 elif elem == 82:
-                    num_observations[8] += 1
+                    num_observations['eight'] += 1
                 elif elem == 88:
-                    num_observations[9] += 1
+                    num_observations['nine'] += 1
                 elif elem == 97:
-                    num_observations[10] += 1
+                    num_observations['oh'] += 1
             # count each silence state as word
             elif elem == 0:
-                num_observations[-1] += 1
+                num_observations['silence'] += 1
     # close file
     word_alignment.close()
     # write count to file
     num_observations_sorted = sorted(num_observations.items(), key=lambda x: x[1], reverse=True)
-    count = open('num_obersvations_per_mixture.word', 'w')
+    count = open('num_observations_per_mixture.word', 'w')
     for elem in num_observations_sorted:
         count.write(str(elem[0]) + ' ' + str(elem[1]) + '\n')
 
@@ -67,6 +76,73 @@ def num_obersvations_word(src_file):
 
 
 num_obersvations_word('alignment.word')
+# task c
+def num_obersvations_phoneme(src_file):
+    word_alignment = open(src_file, 'r')
+    all_prefixes = [0, 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55]
+    num_observations = {'silence': 0, 'ah': 0, 'ax': 0, 'ay': 0, 'f': 0, 'eh': 0, 'ey': 0, 'ih': 0, 'iy':0, 'k': 0, 'n': 0,
+                        'ow': 0, 's': 0, 'r':0, 't':0, 'th':0, 'uw':0, 'v':0, 'w':0, 'z':0}
+
+
+    for line in word_alignment:
+        line_int = np.fromstring(line, dtype=int, sep=' ')
+        current_prefix = line_int[0]
+        for elem in line_int:
+            if elem in all_prefixes and current_prefix != elem:
+                current_prefix = elem
+                if elem == 1:
+                    num_observations['ah'] += 1
+                elif elem == 4:
+                    num_observations['ax'] += 1
+                elif elem == 7:
+                    num_observations['ay'] += 1
+                elif elem == 10:
+                    num_observations['f'] += 1
+                elif elem == 13:
+                    num_observations['eh'] += 1
+                elif elem == 16:
+                    num_observations['ey'] += 1
+                elif elem == 19:
+                    num_observations['ih']
+                elif elem == 22:
+                    num_observations['iy'] += 1
+                elif elem == 25:
+                    num_observations['k'] += 1
+                elif elem == 28:
+                    num_observations['n'] += 1
+                elif elem == 31:
+                    num_observations['ow'] += 1
+                elif elem == 34:
+                    num_observations['s'] += 1
+                elif elem == 37:
+                    num_observations['r'] += 1
+                elif elem == 40:
+                    num_observations['t'] += 1
+                elif elem == 43:
+                    num_observations['th'] += 1
+                elif elem == 46:
+                    num_observations['uw'] += 1
+                elif elem == 49:
+                    num_observations['v'] += 1
+                elif elem == 52:
+                    num_observations['w'] += 1
+                elif elem == 55:
+                    num_observations['z'] += 1
+            # count each silence state as word
+            elif elem == 0:
+                num_observations['silence'] += 1
+    # close file
+    word_alignment.close()
+    # write count to file
+    num_observations_sorted = sorted(num_observations.items(), key=lambda x: x[1], reverse=True)
+    count = open('num_observations_per_mixture.phoneme', 'w')
+    for elem in num_observations_sorted:
+        count.write(str(elem[0]) + ' ' + str(elem[1]) + '\n')
+
+    count.close()
+    # plotting
+    plot(num_observations_sorted)
+num_obersvations_phoneme('alignment.phoneme')
 # task c
 def translate_word_to_phoneme(word):
     """
