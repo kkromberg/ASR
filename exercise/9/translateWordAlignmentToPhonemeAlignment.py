@@ -75,7 +75,7 @@ def num_obersvations_word(src_file):
     plot(num_observations_sorted)
 
 
-num_obersvations_word('alignment.word')
+#num_obersvations_word('alignment.word')
 # task c
 def num_obersvations_phoneme(src_file):
     word_alignment = open(src_file, 'r')
@@ -142,7 +142,7 @@ def num_obersvations_phoneme(src_file):
     count.close()
     # plotting
     plot(num_observations_sorted)
-num_obersvations_phoneme('alignment.phoneme')
+#num_obersvations_phoneme('alignment.phoneme')
 # task c
 def translate_word_to_phoneme(word):
     """
@@ -378,3 +378,59 @@ def word_to_phoneme(src_file, target_file):
 
 # task c
 word_to_phoneme('alignment.word', 'alignment.phoneme')
+
+
+##################### task d ###################
+def determine_phoneme(state):
+    phoneme_prefix    = {0: 'silence', 1: 'ah', 4: 'ax', 7: 'ay', 10: 'f', 13: 'eh', 16: 'ey', 19: 'ih', 22: 'iy',
+                         25: 'k', 28: 'n', 31: 'ow', 34: 's', 37: 'r', 40: 't', 43: 'th', 46: 'uw', 49: 'v', 52: 'w',
+                         55: 'z'}
+    try:
+        return phoneme_prefix[state]
+    except:
+        return None
+# each phoneme consits of three different states
+def translate_triphone(src_file):
+    phoneme_alignment = open(src_file, 'r')
+    phoneme_prefix    = {'silence': 0, 'ah': 1, 'ax': 4, 'ay': 7, 'f': 10, 'eh': 13, 'ey': 16, 'ih': 19, 'iy': 22,
+                         'k': 25, 'n': 28, 'ow': 31, 's': 34, 'r': 37, 't': 40, 'th': 43, 'uw': 46, 'v': 49, 'w': 52,
+                         'z': 55}
+    triphones = {}
+    for line in phoneme_alignment:
+        # convert string to integers
+        line_int = np.fromstring(line, dtype=int, sep=' ')
+
+        first_phoneme  = True
+        left_context   = str()
+        middle_phoneme = str()
+        right_context  = str()
+
+        first_phoneme_state  = -1
+        second_phoneme_state = -1
+        third_phoneme_state  = -1
+        for i in range(len(line_int)):
+            # prefix of the left context (skip silence state)
+            if line_int[i] != 0:
+                # set left context by
+                left_context = determine_phoneme(line_int[i])
+                # middle phoneme
+                for j in range(i, len(line_int)):
+                    if abs(line_int[i] - line_int[j]) > 2:
+                        middle_phoneme = determine_phoneme(line_int[j])
+                        # right context
+                        for k in range(j, len(line_int)):
+                            if abs(line_int[j] - line_int[k]) > 2:
+                                right_context = determine_phoneme(line_int[k])
+                                break
+                        break
+            if None not in (left_context, middle_phoneme, right_context):
+                if str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}' in triphones:
+                    triphones[str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}'] += 1
+                else:
+                    triphones[str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}'] = 1
+                print triphones
+        break
+        #print triphones
+
+
+translate_triphone('alignment.phoneme')
