@@ -400,26 +400,26 @@ def translate_triphone(src_file):
         # convert string to integers
         line_int = np.fromstring(line, dtype=int, sep=' ')
 
-        first_phoneme  = True
         left_context   = str()
         middle_phoneme = str()
         right_context  = str()
 
-        first_phoneme_state  = -1
-        second_phoneme_state = -1
-        third_phoneme_state  = -1
+        counter = 0
         for i in range(len(line_int)):
+            i = counter
             # prefix of the left context (skip silence state)
-            if line_int[i] != 0:
+            #print i
+            if i < len(line_int) and line_int[i] != 0:
                 # set left context by
                 left_context = determine_phoneme(line_int[i])
                 # middle phoneme
                 for j in range(i, len(line_int)):
-                    if abs(line_int[i] - line_int[j]) > 2:
+                    if abs(line_int[i] - line_int[j]) > 2 and line_int[j] != 0:
                         middle_phoneme = determine_phoneme(line_int[j])
+                        counter = j
                         # right context
                         for k in range(j, len(line_int)):
-                            if abs(line_int[j] - line_int[k]) > 2:
+                            if abs(line_int[j] - line_int[k]) > 2 and line_int[k] != 0:
                                 right_context = determine_phoneme(line_int[k])
                                 break
                         break
@@ -428,9 +428,8 @@ def translate_triphone(src_file):
                     triphones[str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}'] += 1
                 else:
                     triphones[str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}'] = 1
-                print triphones
-        break
-        #print triphones
-
+            if counter == i:
+                counter += 1
+    print triphones
 
 translate_triphone('alignment.phoneme')
