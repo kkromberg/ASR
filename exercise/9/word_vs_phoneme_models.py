@@ -2,6 +2,7 @@ import numpy as np
 import json
 import operator
 import matplotlib.pyplot as plt
+import collections
 
 
 # plotting for b and c
@@ -143,7 +144,7 @@ def num_obersvations_phoneme(src_file):
     count.close()
     # plotting
     plot(num_observations_sorted)
-num_obersvations_phoneme('alignment.phoneme')
+#num_obersvations_phoneme('alignment.phoneme')
 
 ####################################### task c #######################################
 def translate_word_to_phoneme(word):
@@ -383,6 +384,25 @@ def word_to_phoneme(src_file, target_file):
 
 
 ####################################### task d #######################################
+def write_triphone_models(ordered_triphones):
+    output = open('triphone.models', 'w')
+    starting_index = 58
+    for elem in ordered_triphones:
+        tabs = str()
+        if len(elem) < 8:
+            tabs = '\t\t'
+        else:
+            tabs = '\t'
+        output.write(elem + tabs + str(starting_index) + ' ' + str(starting_index + 1) + ' ' + str(starting_index + 2) + '\n')
+        starting_index +=3
+    output.close()
+
+def plot_triphone(observations):
+    for elem in observations.iteritems():
+        print elem[0]
+        print elem[1]
+
+
 def determine_phoneme(state):
     phoneme_prefix    = {0: 'silence', 1: 'ah', 4: 'ax', 7: 'ay', 10: 'f', 13: 'eh', 16: 'ey', 19: 'ih', 22: 'iy',
                          25: 'k', 28: 'n', 31: 'ow', 34: 's', 37: 'r', 40: 't', 43: 'th', 46: 'uw', 49: 'v', 52: 'w',
@@ -391,6 +411,8 @@ def determine_phoneme(state):
         return phoneme_prefix[state]
     except:
         return None
+
+
 # each phoneme consits of three different states
 def translate_triphone(src_file):
     phoneme_alignment = open(src_file, 'r')
@@ -432,6 +454,12 @@ def translate_triphone(src_file):
                     triphones[str(middle_phoneme) + '{' + str(left_context) + ',' + str(right_context) + '}'] = 1
             if counter == i:
                 counter += 1
-    print triphones
+        #break
+    #print triphones
+    ordered_triphones =  collections.OrderedDict(sorted(triphones.items()))
+    # write triphone models
+    write_triphone_models(ordered_triphones)
+    plot_triphone(ordered_triphones)
+    #print ordered_triphones
 
 translate_triphone('alignment.phoneme')
