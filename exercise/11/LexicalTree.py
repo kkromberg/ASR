@@ -1,5 +1,5 @@
 import sys
-sys.setrecursionlimit(30)
+sys.setrecursionlimit(1000)
 class PrefixTreeNode:
     def __init__(self):
         self.children = None
